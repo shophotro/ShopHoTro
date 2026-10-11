@@ -141,7 +141,6 @@
                 </div>
 
                 <div class="flex items-center space-x-3 flex-wrap gap-y-2">
-                    <!-- Balance Display Badge -->
                     <div class="bg-amber-100 neo-box-static px-3 py-1.5 rounded-xl flex items-center space-x-2">
                         <i class="fa-solid fa-wallet text-amber-700 text-xs"></i>
                         <span class="text-xs font-bold text-slate-700">Số dư:</span>
@@ -182,7 +181,6 @@
             </div>
 
             <main class="max-w-6xl mx-auto px-4 my-6 w-full flex-1 space-y-6">
-                <!-- DIRECT APIDOITHE CARD CHARGING FORM AT THE TOP -->
                 <div class="bg-amber-50/70 neo-box-static rounded-3xl p-6 md:p-8 border-3 border-black">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b-2 border-black pb-4 mb-6">
                         <div>
@@ -218,7 +216,7 @@
                                     <option value="50000">50,000 đ</option>
                                     <option value="100000" selected>100,000 đ</option>
                                     <option value="200000">200,000 đ</option>
-                                    <option value="500,000">500,000 đ</option>
+                                    <option value="500000">500,000 đ</option>
                                     <option value="1000000">1,000,000 đ</option>
                                 </select>
                             </div>
@@ -244,7 +242,6 @@
                         </div>
                     </form>
 
-                    <!-- CARD RECHARGE HISTORY & STATUS LOOKUP -->
                     <div class="mt-8 pt-6 border-t-2 border-black">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-lg font-bold font-heading flex items-center gap-2">
@@ -292,7 +289,6 @@
                     </div>
                 </div>
 
-                <!-- TAB 1: BLOX FRUITS -->
                 <div id="tab-bloxfruits" class="tab-content grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white neo-box rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-gradient-to-r from-amber-700 to-amber-600 text-white font-black text-xs px-4 py-2 rounded-bl-2xl border-l-3 border-b-3 border-black shadow">COMBO TIẾT KIỆM</div>
@@ -355,7 +351,6 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: FREE FIRE -->
                 <div id="tab-freefire" class="tab-content hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white neo-box rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-gradient-to-r from-amber-700 to-amber-600 text-white font-black text-xs px-4 py-2 rounded-bl-2xl border-l-3 border-b-3 border-black shadow">COMBO TIẾT KIỆM</div>
@@ -406,7 +401,6 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: FC MOBILE VN -->
                 <div id="tab-fcmobile" class="tab-content hidden grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white neo-box rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-gradient-to-r from-amber-700 to-amber-600 text-white font-black text-xs px-4 py-2 rounded-bl-2xl border-l-3 border-b-3 border-black shadow">COMBO TIẾT KIỆM</div>
@@ -527,13 +521,11 @@
         let currentSelectedPrice = '';
         let currentNumericPrice = 0;
 
-        // Updated Partner Credentials from user specifications
-        const partnerId = '83178270551';
-        const partnerKey = 'i9xcwxbuwjy3xly0dbm24cvfxvemjmol'; // using active key / fallback
+        const partnerId = '51154522170';
+        const partnerKey = 'i9xcwxbuwjy3xly0dbm24cvfxvemjmol';
 
         let userCards = JSON.parse(localStorage.getItem('user_cards_' + currentUser) || '[]');
-
-        const corsApiKey = 'temp_api_key'; // Replace with your actual CORSPROXY API key if required
+        const corsApiKey = 'temp_api_key';
 
         window.addEventListener('firebase-ready', () => {
             if (currentUser) {
@@ -554,6 +546,32 @@
             }
         };
 
+        function showToast(title, msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const titleEl = document.getElementById('toast-title');
+            const msgEl = document.getElementById('toast-msg');
+            const iconEl = document.getElementById('toast-icon');
+
+            titleEl.textContent = title;
+            msgEl.textContent = msg;
+
+            if (type === 'success') {
+                iconEl.className = 'text-emerald-600 text-xl font-black';
+                iconEl.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            } else if (type === 'error') {
+                iconEl.className = 'text-red-600 text-xl font-black';
+                iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            } else {
+                iconEl.className = 'text-blue-600 text-xl font-black';
+                iconEl.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+            }
+
+            toast.classList.remove('translate-y-28', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-28', 'opacity-0');
+            }, 3500);
+        }
+
         function handleLogin(e) {
             e.preventDefault();
             const username = document.getElementById('username-input').value.trim();
@@ -571,7 +589,7 @@
             if(window.db) {
                 initUserBalanceListener();
             }
-            showToast('Chào, ' + currentUser, '', 'success');
+            showToast('Chào, ' + currentUser, 'Đã đăng nhập thành công', 'success');
         }
 
         function handleLogout() {
@@ -586,7 +604,7 @@
 
         function updateUserUI() {
             document.getElementById('display-username').textContent = currentUser;
-            document.getElementById('user-avatar-initial').textContent = currentUser.charAt(0).toUpperCase();
+            document.getElementById('user-avatar-initial').textContent = currentUser ? currentUser.charAt(0).toUpperCase() : 'U';
             document.getElementById('user-balance-display').textContent = currentUserBalance.toLocaleString('vi-VN') + ' đ';
         }
 
@@ -667,7 +685,6 @@
             }
         }
 
-        // ASYNCHRONOUS CARD SUBMISSION & STATUS POLLING / LOOKUP
         async function handleDirectCardRecharge(e) {
             e.preventDefault();
 
@@ -681,7 +698,6 @@
                 return;
             }
 
-            // sign = md5(partner_key + code + serial)
             const signString = partnerKey + code + serial;
             const sign = CryptoJS.MD5(signString).toString();
 
@@ -712,7 +728,7 @@
                     const text = await response.text();
                     result = JSON.parse(text);
                 } catch (corsErr) {
-                    console.warn("Direct fetch error or CORS restriction, trying CORSPROXY API fallback...", corsErr);
+                    console.warn("Direct fetch error, trying proxy...", corsErr);
                     const proxyUrl = `https://corsproxy.io/?api_key=${corsApiKey}&url=` + encodeURIComponent('https://apidoithe.com/api/partner/charging');
                     const response = await fetch(proxyUrl, {
                         method: 'POST',
@@ -733,8 +749,6 @@
                     return;
                 }
 
-                // Status 1: "Đã nhận thẻ, đang xử lý." (Asynchronous with request_id)
-                // Status meaning codes: 1=Thành công, 2=Sai mệnh giá, 3=Thẻ lỗi, 99=Đang xử lý / lỗi xác thực
                 const requestId = result.request_id || ('TX' + Math.random().toString(36).substring(2, 8).toUpperCase());
                 
                 const cardRecord = {
@@ -753,14 +767,10 @@
                 localStorage.setItem('user_cards_' + currentUser, JSON.stringify(userCards));
                 loadCardHistory();
 
-                if (result.status === 1 && (!result.transaction_status || result.transaction_status === 'pending')) {
+                if (result.status === 1) {
                     showToast('Đã nhận thẻ', result.message || 'Thẻ đã được tiếp nhận, đang xử lý bất đồng bộ (dưới 30s).', 'info');
-                } else if (result.status === 1 || result.status === 'success') {
-                    const net = result.net_amount || denomination;
-                    updateUserBalanceInDb(currentUser, currentUserBalance + net);
-                    showToast('Thành công', `Nạp thẻ thành công +${net.toLocaleString('vi-VN')} đ`, 'success');
                 } else {
-                    showToast('Thông báo thẻ', result.message || `Trạng thái: ${result.status}`, 'error');
+                    showToast('Thông báo thẻ', result.message || `Lỗi / Trạng thái: ${result.status}`, 'error');
                 }
 
                 document.getElementById('card-serial').value = '';
@@ -770,11 +780,10 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> GỬI THẺ CÀO & TẠO YÊU CẦU';
                 console.error("API error:", err);
-                showToast('Lỗi gửi thẻ', 'Không thể kết nối đến apidoithe.com. Vui lòng thử lại sau!', 'error');
+                showToast('Lỗi gửi thẻ', 'Không thể kết nối đến apidoithe.com. Vui lòng kiểm tra lại!', 'error');
             }
         }
 
-        // 3. Tra cứu trạng thái (GET /api/partner/charging/{request_id}?partner_id=83178270551)
         async function checkCardStatus(requestId) {
             showToast('Đang tra cứu', 'Đang kết nối lấy trạng thái mới nhất...', 'info');
             const targetCard = userCards.find(c => c.request_id === requestId);
@@ -795,4 +804,122 @@
                 }
 
                 if (result) {
-<!-- ... existing code -->
+                    if (targetCard) {
+                        targetCard.status = result.status;
+                        targetCard.net_amount = result.net_amount || 0;
+                        if(result.transaction_status) {
+                            targetCard.message = `Giao dịch: ${result.transaction_status}`;
+                        }
+                        localStorage.setItem('user_cards_' + currentUser, JSON.stringify(userCards));
+                        loadCardHistory();
+                    }
+
+                    if (result.status === 1 && result.transaction_status === 'success') {
+                        const net = result.net_amount || (targetCard ? targetCard.denomination : 0);
+                        updateUserBalanceInDb(currentUser, currentUserBalance + net);
+                        showToast('Thành công', `Thẻ hợp lệ! Đã cộng +${net.toLocaleString('vi-VN')} đ`, 'success');
+                    } else if (result.status === 2) {
+                        showToast('Sai mệnh giá', 'Thẻ bị phạt hoặc sai mệnh giá.', 'error');
+                    } else if (result.status === 3) {
+                        showToast('Thẻ lỗi', 'Mã thẻ hoặc seri không đúng / đã sử dụng.', 'error');
+                    } else {
+                        showToast('Trạng thái', result.message || `Status: ${result.status}`, 'info');
+                    }
+                } else {
+                    showToast('Lỗi', 'Không lấy được dữ liệu trạng thái thẻ.', 'error');
+                }
+            } catch (e) {
+                console.error("Check status error:", e);
+                showToast('Lỗi tra cứu', 'Không thể kết nối API tra cứu.', 'error');
+            }
+        }
+
+        function loadCardHistory() {
+            const tbody = document.getElementById('card-history-tbody');
+            if(!tbody) return;
+
+            if (userCards.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500 font-semibold">Chưa có thẻ nào được gửi trong phiên này.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            userCards.forEach(card => {
+                let statusBadge = '<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 font-black">Đang xử lý</span>';
+                if(card.status === 1) statusBadge = '<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-black">Thành công</span>';
+                else if(card.status === 2) statusBadge = '<span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-black">Sai mệnh giá</span>';
+                else if(card.status === 3) statusBadge = '<span class="px-2 py-0.5 rounded bg-red-100 text-red-800 font-black">Thẻ lỗi / Đã dùng</span>';
+
+                html += `
+                    <tr class="border-b border-slate-200">
+                        <td class="p-2.5 font-mono font-bold">${card.request_id}</td>
+                        <td class="p-2.5 font-semibold">${card.telco} - ${card.denomination.toLocaleString('vi-VN')}đ</td>
+                        <td class="p-2.5 font-mono text-slate-600">${card.serial} / ${card.code}</td>
+                        <td class="p-2.5">${statusBadge}</td>
+                        <td class="p-2.5 text-right">
+                            <button onclick="checkCardStatus('${card.request_id}')" class="bg-black text-white px-2.5 py-1 rounded-lg neo-btn font-bold text-[11px]">
+                                Tra cứu
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function submitOrder(e) {
+            e.preventDefault();
+
+            if (currentUserBalance < currentNumericPrice) {
+                showToast('Số dư không đủ', 'Vui lòng nạp thêm tiền qua thẻ cào để thực hiện giao dịch!', 'error');
+                return;
+            }
+
+            const acc = document.getElementById('game-account').value.trim();
+            const pass = document.getElementById('game-password').value.trim();
+            const tfa = document.getElementById('game-2fa').value.trim();
+            const note = document.getElementById('game-note').value.trim();
+            const isIga = document.getElementById('option-iga')?.checked || false;
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ĐANG XỬ LÝ ĐƠN HÀNG...';
+
+            const newBalance = currentUserBalance - currentNumericPrice;
+            await updateUserBalanceInDb(currentUser, newBalance);
+
+            if (window.db) {
+                try {
+                    const { doc, setDoc } = window.firestoreFns;
+                    const orderId = 'ORD_' + Date.now();
+                    const orderRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                    await setDoc(orderRef, {
+                        orderId: orderId,
+                        username: currentUser,
+                        game: currentSelectedGame,
+                        package: currentSelectedPackage,
+                        price: currentSelectedPrice,
+                        account: acc,
+                        password: pass,
+                        twoFactor: tfa,
+                        igaOption: isIga,
+                        note: note,
+                        status: 'Pending',
+                        createdAt: new Date().toISOString()
+                    });
+                } catch(e) {
+                    console.error("Order save error:", e);
+                }
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'XÁC NHẬN ĐẶT DỊCH VỤ <i class="fa-solid fa-check"></i>';
+
+            showToast('Đặt hàng thành công!', `Đã trừ ${currentSelectedPrice}. Cảm ơn bạn đã sử dụng dịch vụ!`, 'success');
+            setTimeout(() => {
+                backToStore();
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
