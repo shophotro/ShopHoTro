@@ -533,6 +533,8 @@
 
         let userCards = JSON.parse(localStorage.getItem('user_cards_' + currentUser) || '[]');
 
+        const corsApiKey = 'temp_api_key'; // Replace with your actual CORSPROXY API key if required
+
         window.addEventListener('firebase-ready', () => {
             if (currentUser) {
                 initUserBalanceListener();
@@ -688,7 +690,7 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ĐANG GỬI THẺ LÊN HỆ THỐNG...';
 
             const payload = {
-                partner_id: 51154522170,
+                partner_id: partnerId,
                 telco: telco,
                 denomination: denomination,
                 serial: serial,
@@ -710,8 +712,8 @@
                     const text = await response.text();
                     result = JSON.parse(text);
                 } catch (corsErr) {
-                    console.warn("Direct fetch error or CORS restriction, trying proxy fallback...", corsErr);
-                    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent('https://apidoithe.com/api/partner/charging');
+                    console.warn("Direct fetch error or CORS restriction, trying CORSPROXY API fallback...", corsErr);
+                    const proxyUrl = `https://corsproxy.io/?api_key=${corsApiKey}&url=` + encodeURIComponent('https://apidoithe.com/api/partner/charging');
                     const response = await fetch(proxyUrl, {
                         method: 'POST',
                         headers: {
@@ -786,127 +788,11 @@
                     const text = await res.text();
                     result = JSON.parse(text);
                 } catch (corsErr) {
-                    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(lookupUrl);
+                    const proxyUrl = `https://corsproxy.io/?api_key=${corsApiKey}&url=` + encodeURIComponent(lookupUrl);
                     const res = await fetch(proxyUrl);
                     const text = await res.text();
                     result = JSON.parse(text);
                 }
 
                 if (result) {
-                    if (targetCard && !targetCard.credited && (result.status === 1 || result.transaction_status === 'success')) {
-                        const net = result.net_amount || targetCard.denomination;
-                        updateUserBalanceInDb(currentUser, currentUserBalance + net);
-                        targetCard.credited = true;
-                        showToast('Cộng tiền thành công!', `Thẻ ${requestId} đã duyệt thành công +${net.toLocaleString('vi-VN')} đ`, 'success');
-                    } else {
-                        showToast('Trạng thái thẻ', result.message || `Trạng thái hiện tại: ${result.status || result.transaction_status}`, 'success');
-                    }
-
-                    if (targetCard) {
-                        targetCard.status = result.status || targetCard.status;
-                        targetCard.net_amount = result.net_amount || targetCard.net_amount;
-                        localStorage.setItem('user_cards_' + currentUser, JSON.stringify(userCards));
-                        loadCardHistory();
-                    }
-                } else {
-                    showToast('Không có dữ liệu', 'Không nhận được kết quả tra cứu.', 'error');
-                }
-            } catch (err) {
-                console.error("Lookup error:", err);
-                // Simulate status check for demo when API blocks direct browser fetch
-                if (targetCard) {
-                    showToast('Đã tra cứu', `Mã giao dịch ${requestId}: Đang xử lý hoặc đã hoàn tất.`, 'info');
-                }
-            }
-        }
-
-        function loadCardHistory() {
-            const tbody = document.getElementById('card-history-tbody');
-            if (!userCards || userCards.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 font-semibold">Chưa có thẻ nào được gửi trong phiên này.</td></tr>`;
-                return;
-            }
-
-            let html = '';
-            userCards.forEach(c => {
-                let statusBadge = '';
-                if (c.status === 1 || c.status === 'success') {
-                    statusBadge = '<span class="bg-emerald-100 text-emerald-800 font-black px-2.5 py-1 rounded-lg border border-black text-[10px]">Thành công</span>';
-                } else if (c.status === 2) {
-                    statusBadge = '<span class="bg-amber-100 text-amber-800 font-black px-2.5 py-1 rounded-lg border border-black text-[10px]">Sai mệnh giá</span>';
-                } else if (c.status === 3) {
-                    statusBadge = '<span class="bg-red-100 text-red-800 font-black px-2.5 py-1 rounded-lg border border-black text-[10px]">Thẻ lỗi</span>';
-                } else {
-                    statusBadge = '<span class="bg-blue-100 text-blue-800 font-black px-2.5 py-1 rounded-lg border border-black text-[10px]">Đang xử lý (99)</span>';
-                }
-
-                html += `
-                    <tr class="border-b border-black/10 hover:bg-neutral-50 font-semibold">
-                        <td class="p-2.5 font-mono font-bold">${c.request_id}</td>
-                        <td class="p-2.5">${c.telco} <br><span class="text-amber-800 font-black">${c.denomination.toLocaleString('vi-VN')} đ</span></td>
-                        <td class="p-2.5 font-mono text-[11px]">Seri: ${c.serial.slice(0,6)}...<br>Code: ****</td>
-                        <td class="p-2.5">${statusBadge}<br><span class="text-[10px] text-slate-500">${c.message}</span></td>
-                        <td class="p-2.5 text-right">
-                            <button onclick="checkCardStatus('${c.request_id}')" class="bg-black text-white hover:bg-neutral-800 neo-btn px-3 py-1.5 rounded-lg text-[10px] font-black">
-                                <i class="fa-solid fa-magnifying-glass"></i> Tra cứu
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        async function submitOrder(e) {
-            e.preventDefault();
-            const gameAcc = document.getElementById('game-account').value;
-            const gamePass = document.getElementById('game-password').value;
-            const game2fa = document.getElementById('game-2fa').value;
-            const gameNote = document.getElementById('game-note').value;
-
-            if(currentUserBalance < currentNumericPrice) {
-                showToast('Số dư không đủ', 'Vui lòng nạp thêm thẻ cào vào ví để thanh toán dịch vụ này!', 'error');
-                return;
-            }
-
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ĐANG XỬ LÝ THANH TOÁN...';
-
-            await new Promise(r => setTimeout(r, 1000));
-
-            const newBalance = currentUserBalance - currentNumericPrice;
-            await updateUserBalanceInDb(currentUser, newBalance);
-
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'XÁC NHẬN ĐẶT DỊCH VỤ <i class="fa-solid fa-check"></i>';
-
-            showToast('Đặt dịch vụ thành công!', 'Thợ cày đã nhận đơn và sẽ bắt đầu tiến hành.', 'success');
-            backToStore();
-        }
-
-        function showToast(title, msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastTitle = document.getElementById('toast-title');
-            const toastMsg = document.getElementById('toast-msg');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastTitle.textContent = title;
-            toastMsg.textContent = msg;
-
-            if(type === 'success') {
-                toastIcon.className = 'text-emerald-600 text-xl font-black';
-                toastIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-            } else {
-                toastIcon.className = 'text-red-600 text-xl font-black';
-                toastIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-            }
-
-            toast.classList.remove('translate-y-28', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-28', 'opacity-0');
-            }, 4000);
-        }
-    </script>
-</body>
-</html>
+<!-- ... existing code -->
